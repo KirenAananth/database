@@ -3,6 +3,8 @@ name: Slack Notification on Pull Request Creation
 on:
   pull_request:
     types: [opened]
+    branches:
+      - main
 
 jobs:
   notify_on_pr_create:
