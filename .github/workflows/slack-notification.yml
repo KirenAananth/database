@@ -2,9 +2,9 @@ name: Slack Notification on Schema Change
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
     paths:
-      - 'database/schema/**'  # Only trigger workflow if changes are within database/schema directory
+      - 'database/schema/**'
 
 jobs:
   notify_on_pr_opened:
