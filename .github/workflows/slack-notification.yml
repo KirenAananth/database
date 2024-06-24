@@ -1,37 +1,24 @@
-name: Slack Notification on Schema Change
+name: Slack Notification on Pull Request Creation
 
 on:
   pull_request:
     types: [opened]
 
 jobs:
-  notify_on_pr_opened:
+  notify_on_pr_create:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Send Slack Notification
+        uses: rtCamp/action-slack-notify@v2
         with:
-          python-version: '3.x'
-
-      - name: Run notify_schema_change script
-        id: notify_schema_change
-        if: ${{ steps.check_schema_changes.outputs.schema_files_changed == 'true' }}
-        env:
-        GITHUB_EVENT_PATH: ${{ github.event_path }}
-        GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: |
-        output=$(python scripts/notify_schema_change.py)
-        echo "Script output:"
-        echo "$output"
-        echo "::set-output name=message_content::$output"   
-
-      - name: Send Slack notification
-        if: steps.notify_schema_change.outputs.message_content != ''
+          status: 'custom'
+          fields: repo,head_repo,author,head_sha,action,url,pull_request_number
+          repo: ${{ github.repository }}
+          head_repo: ${{ github.event.pull_request.head.repo.full_name }}
+          author: ${{ github.event.pull_request.user.login }}
+          head_sha: ${{ github.event.pull_request.head.sha }}
+          action: ${{ github.event_name }}
+          url: ${{ github.event.pull_request.html_url }}
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data "{'text': '${{ steps.notify_schema_change.outputs.message_content }}'}" $SLACK_WEBHOOK
 
