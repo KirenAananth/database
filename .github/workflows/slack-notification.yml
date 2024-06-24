@@ -1,18 +1,43 @@
-name: Slack Notification on PR Creation
+name: Slack Notification on Schema Change
 
 on:
   pull_request:
     types: [opened]
+    paths:
+      - 'database/schema/**'  # Only trigger workflow if changes are within database/schema directory
 
 jobs:
   notify_on_pr_opened:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Run notify_schema_change script
+        id: notify_schema_change
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          # Check if schema files are changed
+          schema_files_changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^database/schema/')
+          if [ -n "$schema_files_changed" ]; then
+            output=$(python scripts/notify_schema_change.py)
+            echo "::set-output name=message_content::$output"
+          else
+            echo "No changes detected in database/schema directory. Exiting."
+            exit 0
+          fi
+
       - name: Send Slack notification
+        if: steps.notify_schema_change.outputs.message_content != ''
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "New pull request created on main branch: ${{ github.event.pull_request.html_url }} by ${{ github.event.pull_request.user.login }}"
-          }' $SLACK_WEBHOOK
+          curl -X POST -H 'Content-type: application/json' --data "{'text': '${{ steps.notify_schema_change.outputs.message_content }}'}" $SLACK_WEBHOOK
 
