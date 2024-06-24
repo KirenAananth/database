@@ -18,19 +18,15 @@ jobs:
 
       - name: Run notify_schema_change script
         id: notify_schema_change
+        if: ${{ steps.check_schema_changes.outputs.schema_files_changed == 'true' }}
         env:
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          # Check if schema files are changed
-          schema_files_changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^database/schema/')
-          if [ -n "$schema_files_changed" ]; then
-            output=$(python scripts/notify_schema_change.py)
-            echo "::set-output name=message_content::$output"
-          else
-            echo "No changes detected in database/schema directory. Exiting."
-            exit 0
-          fi
+        output=$(python scripts/notify_schema_change.py)
+        echo "Script output:"
+        echo "$output"
+        echo "::set-output name=message_content::$output"   
 
       - name: Send Slack notification
         if: steps.notify_schema_change.outputs.message_content != ''
