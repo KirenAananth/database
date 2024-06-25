@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS test_keyspace.test_table (
     id UUID PRIMARY KEY,
     name TEXT,
     value INT
-     age INT
+    age INT
+    others INT
 );
