@@ -24,43 +24,42 @@ jobs:
           echo "Running validation..."
 
       - name: Send Slack message
-        if: always() # Ensure this step runs even if previous steps fail
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "A new action has been completed.",
-              "attachments": [
-                {
-                  "color": "#36a64f",
-                  "title": "GitHub Actions Notification",
-                  "fields": [
-                    {
-                      "title": "Repository",
-                      "value": "${{ github.repository }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Event",
-                      "value": "${{ github.event_name }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Commit",
-                      "value": "${{ github.sha }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Author",
-                      "value": "${{ github.actor }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Job Status",
-                      "value": "Completed"
-                    }
-                  ]
-                }
-              ]
-            }
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "A new action has been completed.",
+            "attachments": [
+              {
+                "color": "#36a64f",
+                "title": "GitHub Actions Notification",
+                "fields": [
+                  {
+                    "title": "Repository",
+                    "value": "'${{ github.repository }}'",
+                    "short": true
+                  },
+                  {
+                    "title": "Event",
+                    "value": "'${{ github.event_name }}'",
+                    "short": true
+                  },
+                  {
+                    "title": "Commit",
+                    "value": "'${{ github.sha }}'",
+                    "short": true
+                  },
+                  {
+                    "title": "Author",
+                    "value": "'${{ github.actor }}'",
+                    "short": true
+                  },
+                  {
+                    "title": "Job Status",
+                    "value": "Completed"
+                  }
+                ]
+              }
+            ]
+          }' $SLACK_WEBHOOK_URL
