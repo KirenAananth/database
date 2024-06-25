@@ -1,26 +1,32 @@
-name: Slack Notification on Pull Request Creation
-
+name: Validation 
 on:
+  push:
+    branches: 
+    - main
+    paths:
+    - schema/**
   pull_request:
-    types: [opened]
-    branches:
-      - main
+    branches: 
+    - main
+    paths:
+    - schema/**
 
 jobs:
-  notify_on_pr_create:
-    runs-on: ubuntu-latest
+  check-go:
+    name: Run validate and test
+    runs-on: yaml-validator-inc
     steps:
-      - name: Send Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        with:
-          status: 'custom'
-          fields: repo,head_repo,author,head_sha,action,url,pull_request_number
-          repo: ${{ github.repository }}
-          head_repo: ${{ github.event.pull_request.head.repo.full_name }}
-          author: ${{ github.event.pull_request.user.login }}
-          head_sha: ${{ github.event.pull_request.head.sha }}
-          action: ${{ github.event_name }}
-          url: ${{ github.event.pull_request.html_url }}
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - uses: actions/checkout@v2
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get list of changed files
+        id: changed-files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
+
+      - name: Display changed files
+        run: |
+          echo "Changed files: ${{ env.changed_files }}"
