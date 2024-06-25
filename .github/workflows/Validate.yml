@@ -1,26 +1,66 @@
-name: Validation 
+name: Validation
+
 on:
   push:
     branches: 
-    - main
+      - main
     paths:
-    - schema/**
+      - schema/**
   pull_request:
     branches: 
-    - main
+      - main
     paths:
-    - schema/**
+      - schema/**
 
 jobs:
-  check-go:
-    name: Run validate and test
-    runs-on: Ubuntu-latest
+  Validate:
+    name: Run Validate and Notify
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: get changed files in a PR
-        id: file_name
+      
+      - name: Run validation
         run: |
-          gh pr view $PR_NUMBER --json files --jq '.files.[].path' 2>&1
-          all_changed_files=$(gh pr view "$PR_NUMBER" --json files --jq '.files.[].path')
+          echo "Running validation..."
 
+      - name: Send Slack message
+        if: always() # Ensure this step runs even if previous steps fail
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "A new action has been completed.",
+              "attachments": [
+                {
+                  "color": "#36a64f",
+                  "title": "GitHub Actions Notification",
+                  "fields": [
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Event",
+                      "value": "${{ github.event_name }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Commit",
+                      "value": "${{ github.sha }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Author",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Job Status",
+                      "value": "Completed"
+                    }
+                  ]
+                }
+              ]
+            }
