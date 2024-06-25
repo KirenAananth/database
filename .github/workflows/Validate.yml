@@ -18,14 +18,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
+      - name: Print base and head SHA
+        run: |
+         echo "Base SHA: ${{ github.event.pull_request.base.sha }}"
+         echo "Head SHA: ${{ github.sha }}"
+         
       - name: Get list of changed files
         id: changed-files
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
-          echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
+         BASE_SHA=${{ github.event.pull_request.base.sha }}
+         HEAD_SHA=${{ github.sha }}
+         echo "Using BASE_SHA: $BASE_SHA and HEAD_SHA: $HEAD_SHA"
+         CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA)
+         echo "Changed files: $CHANGED_FILES"
+         echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
 
       - name: Display changed files
         run: |
