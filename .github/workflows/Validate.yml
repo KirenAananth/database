@@ -35,12 +35,15 @@ jobs:
           else
             echo "Changed schema file: $CHANGED_FILE"
           fi
-          echo "::set-output name=changed_file::$CHANGED_FILE"  # Set output for next step
+          # Set output using environment variable
+          echo "::set-env name=CHANGED_FILE::${CHANGED_FILE}"
 
       - name: Send Slack message with Changed File (if applicable)
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # Access the environment variable set in the previous step
+          CHANGED_FILE: ${{ env.CHANGED_FILE }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
             "text": "A new action has been completed.",
