@@ -19,9 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      - name: Run validation
+      - name: Print GitHub Context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          echo "Running validation..."
+          echo "$GITHUB_CONTEXT"
 
       - name: Send Slack message
         if: always()
