@@ -51,15 +51,6 @@ jobs:
                     "title": "Commit",
                     "value": "'${{ github.sha }}'",
                     "short": true
-                  },
-                  {
-                    "title": "Author",
-                    "value": "'${{ github.actor }}'",
-                    "short": true
-                  },
-                  {
-                    "title": "Job Status",
-                    "value": "Completed"
                   }
                 ]
               }
