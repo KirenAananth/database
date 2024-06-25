@@ -10,4 +10,5 @@ CREATE TABLE IF NOT EXISTS test_keyspace.test_table (
     value INT
     age INT
     others INT
+    others2 INT
 );
