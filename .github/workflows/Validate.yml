@@ -14,7 +14,7 @@ on:
 jobs:
   check-go:
     name: Run validate and test
-    runs-on: yaml-validator-inc
+    runs-on: Ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
