@@ -25,7 +25,19 @@ jobs:
         run: |
           echo "$GITHUB_CONTEXT"
 
-      - name: Send Slack message
+      - name: Find Changed File in schema directory
+        id: find-changed-file
+        run: |
+          git fetch --depth=1 origin main
+          CHANGED_FILE=$(git diff --name-only origin/main HEAD schema/)
+          if [ -z "$CHANGED_FILE" ]; then
+            echo "No schema files were changed."
+          else
+            echo "Changed schema file: $CHANGED_FILE"
+          fi
+          echo "::set-output name=changed_file::$CHANGED_FILE"  # Set output for next step
+
+      - name: Send Slack message with Changed File (if applicable)
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -51,8 +63,16 @@ jobs:
                     "title": "Commit",
                     "value": "'${{ github.sha }}'",
                     "short": true
+                  },
+                  {
+                    "title": "Changed Schema File",
+                    "value": " ${{ steps.find-changed-file.outputs.changed_file || 'No schema files changed' }} ",
+                    "short": true
                   }
                 ]
               }
+            ]
+          }' $SLACK_WEBHOOK_URL
+
             ]
           }' $SLACK_WEBHOOK_URL
