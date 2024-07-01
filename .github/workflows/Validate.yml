@@ -2,41 +2,37 @@ name: Validation
 
 on:
   push:
-    branches: 
+    branches:
       - main
     paths:
-      - schema/**
+      - 'schema/**'  # Use single quotes for clarity
   pull_request:
-    branches: 
+    branches:
       - main
     paths:
-      - schema/**
+      - 'schema/**'  # Use single quotes for clarity
 
 jobs:
   Validate:
-    name: Run Validate and Notify
+    name: Run Validation and Notify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Print GitHub Context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v3  # Use the latest checkout action version
 
-      - name: Find Changed File in schema directory
-        id: find-changed-file
+      - name: Find Changed Files in schema directory
+        id: find-changed-files
         run: |
-          git fetch --depth=1 origin main
-          CHANGED_FILE=$(git diff --name-only origin/main HEAD schema/)
-          if [ -z "$CHANGED_FILE" ]; then
+          git fetch --depth=1 origin main  # Fetch the latest main branch
+          CHANGED_FILES=$(git diff --name-only origin/main HEAD 'schema/**')  # Use a single quote for clarity and include the schema directory
+          if [ -z "$CHANGED_FILES" ]; then
             echo "No schema files were changed."
           else
-            echo "Changed schema file: $CHANGED_FILE"
+            echo "Changed schema files:"
+            echo "$CHANGED_FILES"  # Print all changed files
           fi
-          # Set output using environment variable
-          echo "::set-env name=CHANGED_FILE::${CHANGED_FILE}"
+
+          # Store changed files in a dedicated output variable for later use
+          echo "::set-output name=CHANGED_FILES::$CHANGED_FILES"
 
       - name: Send Slack message with Changed File (if applicable)
         if: always()
