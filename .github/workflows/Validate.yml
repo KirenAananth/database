@@ -35,40 +35,42 @@ jobs:
           echo "::set-output name=CHANGED_FILES::$CHANGED_FILES"
 
       - name: Send Slack message with Changed File (if applicable)
-        if: always()
+        if: always()  # This step will always run
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          # Access the environment variable set in the previous step
-          CHANGED_FILE: ${{ env.CHANGED_FILE }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}  # Access secret Slack webhook URL
+          CHANGED_FILE: ${{ steps.find-changed-files.outputs.CHANGED_FILES }}  # Access output variable from previous step
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "A new action has been completed.",
-            "attachments": [
-              {
-                "color": "#36a64f",
-                "title": "GitHub Actions Notification",
-                "fields": [
-                  {
-                    "title": "Repository",
-                    "value": "'${{ github.repository }}'",
-                    "short": true
-                  },
-                  {
-                    "title": "Event",
-                    "value": "'${{ github.event_name }}'",
-                    "short": true
-                  },
-                  {
-                    "title": "Commit",
-                    "value": "'${{ github.sha }}'",
-                    "short": true
-                  },
-                  {
-                    "title": "Changed Schema File",
-                    "value": " ${{ steps.find-changed-file.outputs.changed_file || 'No schema files changed' }} ",
-                    "short": true
-                  }
-                ]
-              }
-            ]
-          }' $SLACK_WEBHOOK_URL
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            --data '{
+              "text": "A new action has been completed.",
+              "attachments": [
+                {
+                  "color": "#36a64f",
+                  "title": "GitHub Actions Notification",
+                  "fields": [
+                    {
+                      "title": "Repository",
+                      "value": "'${{ github.repository }}'",
+                      "short": true
+                    },
+                    {
+                      "title": "Event",
+                      "value": "'${{ github.event_name }}'",
+                      "short": true
+                    },
+                    {
+                      "title": "Commit",
+                      "value": "'${{ github.sha }}'",
+                      "short": true
+                    },
+                    {
+                      "title": "Changed Schema File",
+                      "value": " ${{ steps.find-changed-files.outputs.CHANGED_FILES || 'No schema files changed' }} ",
+                      "short": true
+                    }
+                  ]
+                }
+              ]
+            }' \
+            $SLACK_WEBHOOK_URL
