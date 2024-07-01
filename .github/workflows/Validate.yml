@@ -1,6 +1,11 @@
 name: Validation
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'schema/**'  # Use single quotes for clarity
   pull_request:
     branches:
       - main
