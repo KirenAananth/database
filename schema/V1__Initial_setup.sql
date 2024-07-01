@@ -17,4 +17,5 @@ CREATE TABLE IF NOT EXISTS test_keyspace.test_table (
     others6 INT
     others7 INT
     others8 INT
+    others9 INT
 );
